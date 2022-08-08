@@ -1,3 +1,9 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Author: Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+
 name: ci
 
 on:
@@ -50,6 +56,8 @@ jobs:
     needs: [check-clean, check-stale]
     strategy:
       fail-fast: false
+      matrix: 
+        lint_check: ['python3 util/lint-commits.py HEAD', 'scripts/check-license', 'scripts/verible-lint', 'scripts/python-lint']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -61,16 +69,6 @@ jobs:
       - name: Install Bender
         run: make bender
       - name: Lint commits
-        run: python3 util/lint-commits.py HEAD
-      - name: Lint license
-        run: scripts/check-license
-        env:
-          BENDER: ./bender
-      - name: Lint verilog
-        run: scripts/verible-lint
-        env:
-          BENDER: ./bender
-      - name: Lint python
-        run: scripts/python-lint
+        run: ${{ matrix.lint_check }}
         env:
           BENDER: ./bender
