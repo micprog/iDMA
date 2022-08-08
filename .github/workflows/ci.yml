@@ -87,3 +87,4 @@ jobs:
               -not \( -path '*systems/pulpopen/idma_axi_to_mem.sv' -prune \) \
               -name '*.sv')
           extra_args: "--rules=-interface-name-style --lint_fatal --parse_fatal --waiver_files util/waiver.verible"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
