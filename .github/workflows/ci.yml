@@ -12,6 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install Bender
+        run: |
+          rustup update stable --no-self-update && rustup default stable
+          if ! $(which bender); then
+            cargo instal bender --version 0.25.3
+          fi
       - name: Check clean make targets
         run: |
           make -B prepare_sim gen_ci gen_regs
@@ -21,6 +27,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install Bender
+        run: |
+          rustup update stable --no-self-update && rustup default stable
+          if ! $(which bender); then
+            cargo instal bender --version 0.25.3
+          fi
       - name: Check clean makefile
         run: |
           make -B prepare_sim gen_ci gen_regs
