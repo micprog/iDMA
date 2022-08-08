@@ -16,7 +16,7 @@ jobs:
         run: |
           rustup update stable --no-self-update && rustup default stable
           if ! $(which bender); then
-            cargo instal bender --version 0.25.3
+            cargo install bender --version 0.25.3
           fi
       - name: Check clean make targets
         run: |
@@ -31,7 +31,7 @@ jobs:
         run: |
           rustup update stable --no-self-update && rustup default stable
           if ! $(which bender); then
-            cargo instal bender --version 0.25.3
+            cargo install bender --version 0.25.3
           fi
       - name: Check clean makefile
         run: |
