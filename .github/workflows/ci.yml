@@ -23,7 +23,11 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install Bender
-        run: make bender
+        uses: actions-rs/install@v0.1
+        with:
+          crate: bender
+          version: 0.25.3
+          use-tool-cache: true
       - name: Python Requirements
         run: pip install -r requirements.txt
       - name: Check clean make targets
@@ -31,8 +35,6 @@ jobs:
           make -B prepare_sim gen_ci gen_regs
           make clean
           git status && test -z "$(git status --porcelain)"
-        env:
-          BENDER: ./bender
   check-stale:
     runs-on: ubuntu-latest
     steps:
@@ -42,15 +44,17 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install Bender
-        run: make bender
+        uses: actions-rs/install@v0.1
+        with:
+          crate: bender
+          version: 0.25.3
+          use-tool-cache: true
       - name: Python Requirements
         run: pip install -r requirements.txt
       - name: Check clean makefile
         run: |
           make -B prepare_sim gen_ci gen_regs
           git status && test -z "$(git status --porcelain)"
-        env:
-          BENDER: ./bender
   lint:
     runs-on: ubuntu-latest
     needs: [check-clean, check-stale]
@@ -67,11 +71,13 @@ jobs:
       - name: Python Requirements
         run: python3 -m pip install -r requirements.txt
       - name: Install Bender
-        run: make bender
+        uses: actions-rs/install@v0.1
+        with:
+          crate: bender
+          version: 0.25.3
+          use-tool-cache: true
       - name: Lint
         run: ${{ matrix.lint_check }}
-        env:
-          BENDER: ./bender
   lint-verilog:
     runs-on: ubuntu-latest
     needs: [check-clean, check-stale]
@@ -88,3 +94,29 @@ jobs:
               -name '*.sv')
           extra_args: "--rules=-interface-name-style --lint_fatal --parse_fatal --waiver_files util/waiver.verible"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  analyze-contributors:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v3
+      - name: List contributors
+        run: scripts/list-contributors | tee contributions.txt
+      - name: Upload contributions.txt
+        uses: actions/upload-artifact@v2
+        with:
+          name: contributions.txt
+          path: contributions.txt
+  analyze-todos:
+    runs-on: ubuntu-latest
+    needs: lint
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: List todos
+        run: scripts/list-todos | tee open_todos.txt
+      - name: Upload todos.txt
+        uses: actions/upload-artifact@v2
+        with:
+          name: open_todos.txt
+          path: open_todos.txt
