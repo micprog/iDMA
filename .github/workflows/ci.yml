@@ -13,6 +13,9 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+env:
+  BENDER: ./bender
+
 jobs:
   check-clean:
     runs-on: ubuntu-latest
@@ -23,11 +26,7 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install Bender
-        uses: actions-rs/install@v0.1
-        with:
-          crate: bender
-          version: 0.25.3
-          use-tool-cache: true
+        run: make bender
       - name: Python Requirements
         run: pip install -r requirements.txt
       - name: Check clean make targets
@@ -44,11 +43,7 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
       - name: Install Bender
-        uses: actions-rs/install@v0.1
-        with:
-          crate: bender
-          version: 0.25.3
-          use-tool-cache: true
+        run: make bender
       - name: Python Requirements
         run: pip install -r requirements.txt
       - name: Check clean makefile
@@ -71,11 +66,7 @@ jobs:
       - name: Python Requirements
         run: python3 -m pip install -r requirements.txt
       - name: Install Bender
-        uses: actions-rs/install@v0.1
-        with:
-          crate: bender
-          version: 0.25.3
-          use-tool-cache: true
+        run: make bender
       - name: Lint
         run: ${{ matrix.lint_check }}
   lint-verilog:
@@ -105,7 +96,7 @@ jobs:
       - name: Upload contributions.txt
         uses: actions/upload-artifact@v2
         with:
-          name: contributions.txt
+          name: contributions
           path: contributions.txt
   analyze-todos:
     runs-on: ubuntu-latest
@@ -118,5 +109,35 @@ jobs:
       - name: Upload todos.txt
         uses: actions/upload-artifact@v2
         with:
-          name: open_todos.txt
+          name: open_todos
           path: open_todos.txt
+
+  docs:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Bender
+        run: make bender
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: Python Requirements
+        run: python3 -m pip install -r requirements.txt
+      - name: Install Morty
+        run: cargo install --git https://github.com/zarubaf/morty
+      - name: Build Doc
+        run: make doc
+      - name: Pickle
+        run: make -B pickle
+      - name: Upload doc
+        uses: actions/upload-artifact@v2
+        with:
+          name: doc
+          path: doc/build
+      - name: Upload pickle
+        uses: actions/upload-artifact@v2
+        with:
+          name: pickle
+          paths: pickle
