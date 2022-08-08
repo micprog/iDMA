@@ -48,6 +48,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     needs: [check-clean, check-stale]
+    strategy:
+      fail-fast: false
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
