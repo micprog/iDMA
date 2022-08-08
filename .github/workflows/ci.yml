@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: 
-        lint_check: ['python3 util/lint-commits.py HEAD', 'scripts/check-license', 'scripts/python-lint']
+        lint_check: [commits, license, python]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -67,8 +67,15 @@ jobs:
         run: python3 -m pip install -r requirements.txt
       - name: Install Bender
         run: make bender
-      - name: Lint
-        run: ${{ matrix.lint_check }}
+      - name: Lint commits
+        if: ${{ matrix.lint_check == 'commits' }}
+        run: python3 util/lint-commits.py HEAD
+      - name: Lint license
+        if: ${{ matrix.lint_check == 'license' }}
+        run: scripts/check-license
+      - name: Lint python
+        if: ${{ matrix.lint_check == 'python' }}
+        run: scripts/python-lint
   lint-verilog:
     runs-on: ubuntu-latest
     needs: [check-clean, check-stale]
@@ -98,6 +105,7 @@ jobs:
         with:
           name: contributions
           path: contributions.txt
+          retention-days: 7
   analyze-todos:
     runs-on: ubuntu-latest
     needs: lint
@@ -111,6 +119,7 @@ jobs:
         with:
           name: open_todos
           path: open_todos.txt
+          retention-days: 7
 
   docs:
     runs-on: ubuntu-latest
@@ -136,8 +145,15 @@ jobs:
         with:
           name: doc
           path: doc/build
+          retention-days: 7
       - name: Upload pickle
         uses: actions/upload-artifact@v2
         with:
           name: pickle
-          paths: pickle
+          path: pickle
+          retention-days: 7
+      - name: Publish docs
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/upload-pages-artifact@main
+        with:
+          path: doc/build/html
