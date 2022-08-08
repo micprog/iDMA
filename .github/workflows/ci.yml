@@ -92,6 +92,7 @@ jobs:
               -name '*.sv')
           extra_args: "--rules=-interface-name-style --lint_fatal --parse_fatal --waiver_files util/waiver.verible"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          reviewdog_reporter: github-check
 
   analyze-contributors:
     runs-on: ubuntu-latest
