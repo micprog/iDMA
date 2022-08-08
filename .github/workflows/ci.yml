@@ -84,12 +84,10 @@ jobs:
       - uses: chipsalliance/verible-linter-action@main
         with:
           paths: |
-            $(find . \
-              -not \( -path '*.bender/*' -prune \) \
-              -not \( -path '*morty/*' -prune \) \
-              -not \( -path '*test/*' -prune \) \
-              -not \( -path '*systems/pulpopen/idma_axi_to_mem.sv' -prune \) \
-              -name '*.sv')
+            ./src
+          exclude_paths: |
+            ./src/test
+            ./src/systems/idma_axi_to_mem.sv
           extra_args: "--rules=-interface-name-style --lint_fatal --parse_fatal --waiver_files util/waiver.verible"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reviewdog_reporter: github-check
@@ -153,8 +151,22 @@ jobs:
           name: pickle
           path: pickle
           retention-days: 7
-      - name: Publish docs
+      - name: Create publish docs
         if: ${{ github.event_name == 'push' }}
         uses: actions/upload-pages-artifact@main
         with:
           path: doc/build/html
+
+  deploy-pages:
+    needs: docs
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.output.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
