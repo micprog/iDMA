@@ -258,6 +258,17 @@ gen_ci: .gitlab-ci.yml
 ci_clean:
 	rm -f .gitlab-ci.yml
 
+bender:
+ifeq (,$(wildcard ./bender))
+	curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init \
+		| bash -s -- 0.25.3
+	touch bender
+endif
+
+.PHONY: bender-rm
+bender-rm:
+	rm -f bender
+
 
 ## --------------
 ## Register

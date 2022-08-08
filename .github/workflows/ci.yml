@@ -11,44 +11,64 @@ jobs:
   check-clean:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
       - name: Install Bender
-        run: |
-          rustup update stable --no-self-update && rustup default stable
-          if ! $(which bender); then
-            cargo install bender --version 0.25.3
-          fi
+        run: make bender
+      - name: Python Requirements
+        run: pip install -r requirements.txt
       - name: Check clean make targets
         run: |
           make -B prepare_sim gen_ci gen_regs
           make clean
           git status && test -z "$(git status --porcelain)"
+        env:
+          BENDER: ./bender
   check-stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
       - name: Install Bender
-        run: |
-          rustup update stable --no-self-update && rustup default stable
-          if ! $(which bender); then
-            cargo install bender --version 0.25.3
-          fi
+        run: make bender
+      - name: Python Requirements
+        run: pip install -r requirements.txt
       - name: Check clean makefile
         run: |
           make -B prepare_sim gen_ci gen_regs
           git status && test -z "$(git status --porcelain)"
+        env:
+          BENDER: ./bender
   lint:
     runs-on: ubuntu-latest
     needs: [check-clean, check-stale]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
       - name: Python Requirements
         run: python3 -m pip install -r requirements.txt
+      - name: Install Bender
+        run: make bender
       - name: Lint commits
         run: python3 util/lint-commits.py HEAD
       - name: Lint license
         run: scripts/check-license
+        env:
+          BENDER: ./bender
       - name: Lint verilog
         run: scripts/verible-lint
+        env:
+          BENDER: ./bender
       - name: Lint python
         run: scripts/python-lint
+        env:
+          BENDER: ./bender
